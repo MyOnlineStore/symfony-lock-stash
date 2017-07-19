@@ -1,6 +1,8 @@
 # Stash store for Symfony Lock
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![Build Status](https://travis-ci.org/MyOnlineStore/symfony-lock-stash.svg?branch=master)](https://travis-ci.org/MyOnlineStore/symfony-lock-stash)
+[![Scrutinizer Coverage](https://img.shields.io/scrutinizer/coverage/g/MyOnlineStore/symfony-lock-stash.svg?style=flat-square)](https://github.com/MyOnlineStore/symfony-lock-stash)
+[![Scrutinizer](https://img.shields.io/scrutinizer/g/MyOnlineStore/symfony-lock-stash.svg?style=flat-square)](https://github.com/MyOnlineStore/symfony-lock-stash)
 
 ## Introduction
 
