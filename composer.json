@@ -1,8 +1,10 @@
 {
     "name": "sandwich/symfony-lock-stash",
     "description": "Stash storage implementation for the Symfony Lock component",
+    "type": "library",
     "require": {
-        "symfony/lock": "3.3.x-dev",
+        "php": "^7.0",
+        "symfony/lock": "^3.4",
         "tedivm/stash": "^0.14.2"
     },
     "require-dev": {
