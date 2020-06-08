@@ -1,7 +1,9 @@
 <?php
+declare(strict_types=1);
 
 namespace Sandwich\Tests\Symfony\Lock\Store;
 
+use PHPUnit\Framework\TestCase;
 use Sandwich\Symfony\Lock\Store\StashStore;
 use Stash\Interfaces\ItemInterface;
 use Stash\Interfaces\PoolInterface;
@@ -9,36 +11,32 @@ use Symfony\Component\Lock\Exception\InvalidArgumentException;
 use Symfony\Component\Lock\Exception\LockConflictedException;
 use Symfony\Component\Lock\Key;
 
-class StashStoreTest extends \PHPUnit_Framework_TestCase
+final class StashStoreTest extends TestCase
 {
-    /**
-     * @var PoolInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
+    /** @var PoolInterface */
     private $pool;
 
-    /**
-     * @var StashStore
-     */
+    /** @var StashStore */
     private $stashStore;
 
-    protected function setUp()
+    protected function setUp(): void
     {
-        $this->pool = $this->getMock(PoolInterface::class);
+        $this->pool = $this->createMock(PoolInterface::class);
         $this->stashStore = new StashStore($this->pool);
     }
 
-    public function testConstructWillThrowAnExceptionForInvalidTtl()
+    public function testConstructWillThrowAnExceptionForInvalidTtl(): void
     {
-        $this->setExpectedException(InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new StashStore($this->pool, -1);
     }
 
-    public function testSaveWillPutOffExpirationIfItemExists()
+    public function testSaveWillPutOffExpirationIfItemExists(): void
     {
         $key = new Key('foo');
         $key->setState(StashStore::class, 'some-token');
 
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::exactly(2))->method('isMiss')->willReturn(false);
         $item->expects(self::once())->method('get')->willReturn('another-token');
         $item->expects(self::never())->method('set');
@@ -46,16 +44,16 @@ class StashStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->pool->expects(self::exactly(2))->method('getItem')->with('foo')->willReturn($item);
 
-        $this->setExpectedException(LockConflictedException::class);
+        $this->expectException(LockConflictedException::class);
         $this->stashStore->save($key);
     }
 
-    public function testSaveWillPutOffExpirationIfSaveFails()
+    public function testSaveWillPutOffExpirationIfSaveFails(): void
     {
         $key = new Key('foo');
         $key->setState(StashStore::class, 'some-token');
 
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::exactly(2))->method('isMiss')->willReturn(true);
         $item->expects(self::exactly(2))->method('set')->with('some-token');
         $item->expects(self::once())->method('setTTL')->with(300);
@@ -63,16 +61,16 @@ class StashStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->pool->expects(self::exactly(2))->method('getItem')->with('foo')->willReturn($item);
 
-        $this->setExpectedException(LockConflictedException::class);
+        $this->expectException(LockConflictedException::class);
         $this->stashStore->save($key);
     }
 
-    public function testSaveWillReturnUponSuccess()
+    public function testSaveWillReturnUponSuccess(): void
     {
         $key = new Key('foo');
         $key->setState(StashStore::class, 'some-token');
 
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::once())->method('isMiss')->willReturn(true);
         $item->expects(self::once())->method('set')->with('some-token');
         $item->expects(self::once())->method('save')->willReturn(true);
@@ -82,24 +80,24 @@ class StashStoreTest extends \PHPUnit_Framework_TestCase
         $this->stashStore->save($key);
     }
 
-    public function testWaitAndSaveWillThrowException()
+    public function testWaitAndSaveWillThrowException(): void
     {
-        $this->setExpectedException(InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->stashStore->waitAndSave(new Key('foo'));
     }
 
-    public function testPutOffExpirationWillThrowExceptionForInvalidTtl()
+    public function testPutOffExpirationWillThrowExceptionForInvalidTtl(): void
     {
-        $this->setExpectedException(InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->stashStore->putOffExpiration(new Key('foo'), -1);
     }
 
-    public function testPutOffExpirationWillThrowExceptionIfItemExistsWithOtherToken()
+    public function testPutOffExpirationWillThrowExceptionIfItemExistsWithOtherToken(): void
     {
         $key = new Key('foo');
         $key->setState(StashStore::class, 'some-token');
 
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::once())->method('isMiss')->willReturn(false);
         $item->expects(self::once())->method('get')->willReturn('another-token');
         $item->expects(self::never())->method('set');
@@ -107,16 +105,16 @@ class StashStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->pool->expects(self::once())->method('getItem')->with('foo')->willReturn($item);
 
-        $this->setExpectedException(LockConflictedException::class);
+        $this->expectException(LockConflictedException::class);
         $this->stashStore->putOffExpiration($key, 10);
     }
 
-    public function testPutOffExpirationWillThrowExceptionIfItemSaveFails()
+    public function testPutOffExpirationWillThrowExceptionIfItemSaveFails(): void
     {
         $key = new Key('foo');
         $key->setState(StashStore::class, 'some-token');
 
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::once())->method('isMiss')->willReturn(false);
         $item->expects(self::once())->method('get')->willReturn('some-token');
         $item->expects(self::once())->method('set')->with('some-token');
@@ -125,16 +123,16 @@ class StashStoreTest extends \PHPUnit_Framework_TestCase
 
         $this->pool->expects(self::once())->method('getItem')->with('foo')->willReturn($item);
 
-        $this->setExpectedException(LockConflictedException::class);
+        $this->expectException(LockConflictedException::class);
         $this->stashStore->putOffExpiration($key, 10);
     }
 
-    public function testPutOffExpirationWillExtendItem()
+    public function testPutOffExpirationWillExtendItem(): void
     {
         $key = new Key('foo');
         $key->setState(StashStore::class, 'some-token');
 
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::once())->method('isMiss')->willReturn(false);
         $item->expects(self::once())->method('get')->willReturn('some-token');
         $item->expects(self::once())->method('set')->with('some-token');
@@ -146,12 +144,12 @@ class StashStoreTest extends \PHPUnit_Framework_TestCase
         $this->stashStore->putOffExpiration($key, 10);
     }
 
-    public function testDeleteWillDoNothingIfItemDoesNotExists()
+    public function testDeleteWillDoNothingIfItemDoesNotExists(): void
     {
         $key = new Key('foo');
         $key->setState(StashStore::class, 'some-token');
 
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::once())->method('isMiss')->willReturn(true);
 
         $this->pool->expects(self::once())->method('getItem')->with('foo')->willReturn($item);
@@ -160,12 +158,12 @@ class StashStoreTest extends \PHPUnit_Framework_TestCase
         $this->stashStore->delete($key);
     }
 
-    public function testDeleteWillDoNothingIfItemIsNotOwnedByKey()
+    public function testDeleteWillDoNothingIfItemIsNotOwnedByKey(): void
     {
         $key = new Key('foo');
         $key->setState(StashStore::class, 'some-token');
 
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::once())->method('isMiss')->willReturn(false);
         $item->expects(self::once())->method('get')->willReturn('another-token');
 
@@ -175,12 +173,12 @@ class StashStoreTest extends \PHPUnit_Framework_TestCase
         $this->stashStore->delete($key);
     }
 
-    public function testDeleteWillDeleteItem()
+    public function testDeleteWillDeleteItem(): void
     {
         $key = new Key('foo');
         $key->setState(StashStore::class, 'some-token');
 
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::once())->method('isMiss')->willReturn(false);
         $item->expects(self::once())->method('get')->willReturn('some-token');
 
@@ -190,9 +188,9 @@ class StashStoreTest extends \PHPUnit_Framework_TestCase
         $this->stashStore->delete($key);
     }
 
-    public function testExistsWillReturnFalseIfItemDoesNotExist()
+    public function testExistsWillReturnFalseIfItemDoesNotExist(): void
     {
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::once())->method('isMiss')->willReturn(true);
 
         $this->pool->expects(self::once())->method('getItem')->with('foo')->willReturn($item);
@@ -200,12 +198,12 @@ class StashStoreTest extends \PHPUnit_Framework_TestCase
         self::assertFalse($this->stashStore->exists(new Key('foo')));
     }
 
-    public function testExistsWillReturnFalseIfItemExistsButIsNotOwnedByKey()
+    public function testExistsWillReturnFalseIfItemExistsButIsNotOwnedByKey(): void
     {
         $key = new Key('foo');
         $key->setState(StashStore::class, 'some-token');
 
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::once())->method('isMiss')->willReturn(false);
         $item->expects(self::once())->method('get')->willReturn('another-token');
 
@@ -214,12 +212,12 @@ class StashStoreTest extends \PHPUnit_Framework_TestCase
         self::assertFalse($this->stashStore->exists($key));
     }
 
-    public function testExistsWillReturnTrueIfItemExistsAndIsOwnedByKey()
+    public function testExistsWillReturnTrueIfItemExistsAndIsOwnedByKey(): void
     {
         $key = new Key('foo');
         $key->setState(StashStore::class, 'some-token');
 
-        $item = $this->getMock(ItemInterface::class);
+        $item = $this->createMock(ItemInterface::class);
         $item->expects(self::once())->method('isMiss')->willReturn(false);
         $item->expects(self::once())->method('get')->willReturn('some-token');
 

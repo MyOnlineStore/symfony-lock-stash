@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Sandwich\Symfony\Lock\Store;
 
@@ -8,27 +9,20 @@ use Symfony\Component\Lock\Exception\LockConflictedException;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\StoreInterface;
 
+/** @psalm-suppress DeprecatedInterface */
 final class StashStore implements StoreInterface
 {
-    /**
-     * @var PoolInterface
-     */
+    /** @var PoolInterface */
     private $pool;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $initialTtl;
 
-    /**
-     * @param PoolInterface $pool
-     * @param int           $initialTtl
-     */
-    public function __construct(PoolInterface $pool, $initialTtl = 300)
+    public function __construct(PoolInterface $pool, int $initialTtl = 300)
     {
         if ($initialTtl < 1) {
             throw new InvalidArgumentException(
-                sprintf('%s() expects a strictly positive TTL. Got %d.', __METHOD__, $initialTtl)
+                \sprintf('%s() expects a strictly positive TTL. Got %d.', __METHOD__, $initialTtl)
             );
         }
 
@@ -36,10 +30,7 @@ final class StashStore implements StoreInterface
         $this->initialTtl = $initialTtl;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function save(Key $key)
+    public function save(Key $key): void
     {
         $item = $this->pool->getItem((string) $key);
 
@@ -55,24 +46,21 @@ final class StashStore implements StoreInterface
         $this->putOffExpiration($key, $this->initialTtl);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function waitAndSave(Key $key)
+    public function waitAndSave(Key $key): void
     {
         throw new InvalidArgumentException(
-            sprintf('The store "%s" does not supports blocking locks.', get_class($this))
+            \sprintf('The store "%s" does not supports blocking locks.', static::class)
         );
     }
 
     /**
      * @inheritdoc
      */
-    public function putOffExpiration(Key $key, $ttl)
+    public function putOffExpiration(Key $key, $ttl): void
     {
         if ($ttl < 1) {
             throw new InvalidArgumentException(
-                sprintf('%s() expects a TTL greater or equals to 1. Got %s.', __METHOD__, $ttl)
+                \sprintf('%s() expects a TTL greater or equals to 1. Got %s.', __METHOD__, $ttl)
             );
         }
 
@@ -84,17 +72,14 @@ final class StashStore implements StoreInterface
         }
 
         $item->set($token);
-        $item->setTTL((int) ceil($ttl));
+        $item->setTTL((int) \ceil($ttl));
 
         if (!$item->save()) {
             throw new LockConflictedException();
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function delete(Key $key)
+    public function delete(Key $key): void
     {
         $item = $this->pool->getItem((string) $key);
 
@@ -110,10 +95,7 @@ final class StashStore implements StoreInterface
         $this->pool->deleteItem((string) $key);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function exists(Key $key)
+    public function exists(Key $key): bool
     {
         $item = $this->pool->getItem((string) $key);
 
@@ -122,18 +104,14 @@ final class StashStore implements StoreInterface
 
     /**
      * Retrieve an unique token for the given key.
-     *
-     * @param Key $key
-     *
-     * @return string
      */
-    private function getToken(Key $key)
+    private function getToken(Key $key): string
     {
-        if (!$key->hasState(__CLASS__)) {
-            $token = base64_encode(random_bytes(32));
-            $key->setState(__CLASS__, $token);
+        if (!$key->hasState(self::class)) {
+            $token = \base64_encode(\random_bytes(32));
+            $key->setState(self::class, $token);
         }
 
-        return $key->getState(__CLASS__);
+        return $key->getState(self::class);
     }
 }
