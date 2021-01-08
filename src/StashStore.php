@@ -4,13 +4,12 @@ declare(strict_types=1);
 namespace Sandwich\Symfony\Lock\Store;
 
 use Stash\Interfaces\PoolInterface;
+use Symfony\Component\Lock\BlockingStoreInterface;
 use Symfony\Component\Lock\Exception\InvalidArgumentException;
 use Symfony\Component\Lock\Exception\LockConflictedException;
 use Symfony\Component\Lock\Key;
-use Symfony\Component\Lock\StoreInterface;
 
-/** @psalm-suppress DeprecatedInterface */
-final class StashStore implements StoreInterface
+final class StashStore implements BlockingStoreInterface
 {
     /** @var PoolInterface */
     private $pool;
@@ -49,7 +48,7 @@ final class StashStore implements StoreInterface
     public function waitAndSave(Key $key): void
     {
         throw new InvalidArgumentException(
-            \sprintf('The store "%s" does not supports blocking locks.', static::class)
+            \sprintf('The store "%s" does not supports blocking locks.', self::class)
         );
     }
 

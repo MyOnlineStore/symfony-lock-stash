@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Sandwich\Tests\Symfony\Lock\Store;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sandwich\Symfony\Lock\Store\StashStore;
 use Stash\Interfaces\ItemInterface;
@@ -13,7 +14,7 @@ use Symfony\Component\Lock\Key;
 
 final class StashStoreTest extends TestCase
 {
-    /** @var PoolInterface */
+    /** @var PoolInterface&MockObject */
     private $pool;
 
     /** @var StashStore */
